@@ -1,0 +1,37 @@
+// controllers/paymentController.js
+const mercadopago = require("mercadopago");
+
+mercadopago.configure({
+  access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN
+});
+
+exports.crearPago = async (req, res) => {
+  const { title, price, quantity } = req.body;
+
+  try {
+    const preference = {
+      items: [
+        {
+          title,
+          unit_price: Number(price),
+          quantity
+        }
+      ],
+      back_urls: {
+        success: "https://tusitio.com/success",
+        failure: "https://tusitio.com/failure",
+        pending: "https://tusitio.com/pending"
+      },
+      auto_return: "approved"
+    };
+
+    const response = await mercadopago.preferences.create(preference);
+    res.json({ init_point: response.body.init_point });
+
+  } catch (error) {
+    console.error("Error al crear preferencia:", error);
+    res.status(500).json({ error: "Error al crear pago" });
+  }
+};
+
+
