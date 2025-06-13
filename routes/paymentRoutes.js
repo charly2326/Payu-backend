@@ -6,17 +6,16 @@ const mercadopago = require("mercadopago");
 const admin = require("firebase-admin");
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.applicationDefault(), // Asegúrate de tener GOOGLE_APPLICATION_CREDENTIALS
   });
 }
-const db = admin.firestore();
 
 // Ruta para crear el pago
 router.post("/crear-pago", async (req, res) => {
   try {
     console.log("Solicitud recibida en /crear-pago");
     console.log("Body recibido:", req.body);
-
+    
     const { title, price, quantity } = req.body;
 
     if (!title || !price || !quantity) {
@@ -37,29 +36,16 @@ router.post("/crear-pago", async (req, res) => {
         pending: "https://test-322a2.web.app/confirmacion.html?status=pending"
       },
       auto_return: "approved",
-      notification_url: "https://tu-api.com/notificacion"
+      notification_url: "https://tu-api.com/notificacion" // Opcional para webhooks
     };
 
     const response = await mercadopago.preferences.create(preference);
     console.log("Preferencia creada:", response.body);
 
-    // ✅ Guardar en Firestore
-    await db.collection("facturas").add({
-      title,
-      price,
-      quantity,
-      userId: req.body.userId || null,
-      raffleId: req.body.raffleId || null,
-      boletoIndex: req.body.index || null,
-      paymentId: response.body.id,
-      status: "pendiente",
-      createdAt: new Date()
-    });
-
     res.status(200).json({
       init_point: response.body.init_point,
       success_url: preference.back_urls.success,
-      payment_id: response.body.id
+      payment_id: response.body.id // ID de la transacción
     });
 
   } catch (error) {
@@ -68,11 +54,13 @@ router.post("/crear-pago", async (req, res) => {
   }
 });
 
-// Ruta opcional para recibir webhooks
+// Ruta opcional para recibir webhooks de MercadoPago
 router.post("/notificacion", (req, res) => {
   console.log("Notificación recibida:", req.body);
+  // Aquí puedes procesar la notificación de pago
   res.status(200).send("OK");
 });
 
 module.exports = router;
+
 
