@@ -1,18 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+require("dotenv").config(); // 👈 Carga variables desde .env
+
+const express = require("express");
+const cors = require("cors");
+const mercadopago = require("mercadopago");
+
+mercadopago.configure({
+  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN // 👈 Segura desde .env
+});
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', require('./routes/paymentRoutes'));
+const paymentRoutes = require("./routes/paymentRoutes");
+app.use("/api", paymentRoutes);
 
-app.get("/", (req, res) => res.send("✅ Backend Mercado Pago activo"));
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor backend corriendo en puerto ${PORT}`);
 });
 
