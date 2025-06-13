@@ -2,21 +2,24 @@ const express = require("express");
 const router = express.Router();
 const mercadopago = require("mercadopago");
 
-// Configurar Mercado Pago con Access Token
-mercadopago.configure({
-  access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-});
-
-// Crear pago
+// Ruta para crear el pago
 router.post("/crear-pago", async (req, res) => {
   try {
+    console.log("Solicitud recibida en /crear-pago");
+    console.log("Body recibido:", req.body);
+
     const { title, price, quantity } = req.body;
+
+    if (!title || !price || !quantity) {
+      console.error("Faltan campos en el body");
+      return res.status(400).json({ error: "Faltan datos para procesar el pago" });
+    }
 
     const preference = {
       items: [{
-        title: title || "Producto",
-        unit_price: Number(price) || 1,
-        quantity: Number(quantity) || 1,
+        title: title,
+        unit_price: Number(price),
+        quantity: Number(quantity),
         currency_id: "COP"
       }],
       back_urls: {
@@ -28,14 +31,15 @@ router.post("/crear-pago", async (req, res) => {
     };
 
     const response = await mercadopago.preferences.create(preference);
+    console.log("Preferencia creada:", response.body);
+
     res.status(200).json({ init_point: response.body.init_point });
 
   } catch (error) {
-    console.error("Error al crear pago:", error);
+    console.error("ERROR AL CREAR PAGO:", error.response ? error.response.data : error.message);
     res.status(500).json({ error: "Error interno al crear el pago" });
   }
 });
 
 module.exports = router;
-
 
