@@ -1,12 +1,11 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("./credenciales/test-322a2-firebase-adminsdk-fbsvc-87e7973693.json");
+const serviceAccount = require("/etc/secrets/firebase-key.json"); // Usa el nombre real del archivo en Render
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const db = admin.firestore();
+
 module.exports = db;
 
