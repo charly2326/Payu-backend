@@ -15,6 +15,11 @@ app.use(express.json());
 const paymentRoutes = require("./routes/paymentRoutes");
 app.use("/api", paymentRoutes);
 
+// ✅ Ruta para UptimeRobot
+app.get("/status", (req, res) => {
+  res.status(200).send("OK");
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor backend corriendo en puerto ${PORT}`);
